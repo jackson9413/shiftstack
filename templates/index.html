@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ShiftStack plans volunteer rosters, catches conflicts, and exports a ready-to-share schedule.">
+  <title>ShiftStack — Volunteer Shift Planner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="ShiftStack home">
+      <span class="brand-mark" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </span>
+      <span>
+        <strong>ShiftStack</strong>
+        <small>Volunteer operations, without the spreadsheet</small>
+      </span>
+    </a>
+    <div class="topbar-actions">
+      <span class="local-pill"><i></i> Local-first</span>
+      <button class="button button-ghost" id="demoButton" type="button">Load demo</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="sidebar" aria-label="Planning controls">
+      <section class="panel panel-event">
+        <div class="panel-heading">
+          <div>
+            <span class="eyebrow">Workspace</span>
+            <h2>Choose an event</h2>
+          </div>
+          <span class="count-badge" id="eventCount">0</span>
+        </div>
+        <label class="field">
+          <span>Active event</span>
+          <select id="eventSelect" aria-label="Active event"></select>
+        </label>
+        <div class="button-row">
+          <button class="button button-quiet" id="deleteEventButton" type="button">Delete event</button>
+          <button class="button button-quiet" id="clearButton" type="button">Clear roster</button>
+        </div>
+      </section>
+
+      <details class="panel details-panel" open>
+        <summary>
+          <span><b>Add an event</b><small>Set the date and operating window</small></span>
+          <span class="chevron" aria-hidden="true">+</span>
+        </summary>
+        <form id="eventForm" class="stack-form">
+          <label class="field">
+            <span>Event name</span>
+            <input name="name" type="text" maxlength="120" placeholder="Community food drive" required>
+          </label>
+          <label class="field">
+            <span>Date</span>
+            <input name="event_date" type="date" required>
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span>Starts</span>
+              <input name="start_time" type="time" value="09:00" required>
+            </label>
+            <label class="field">
+              <span>Ends</span>
+              <input name="end_time" type="time" value="15:00" required>
+            </label>
+          </div>
+          <label class="field">
+            <span>Location</span>
+            <input name="location" type="text" maxlength="160" placeholder="Community hall">
+          </label>
+          <button class="button button-primary" type="submit">Create event</button>
+        </form>
+      </details>
+
+      <details class="panel details-panel">
+        <summary>
+          <span><b>Add a volunteer</b><small>Skills, availability, and weekly limit</small></span>
+          <span class="chevron" aria-hidden="true">+</span>
+        </summary>
+        <form id="volunteerForm" class="stack-form">
+          <label class="field">
+            <span>Name</span>
+            <input name="name" type="text" maxlength="120" placeholder="Maya Chen" required>
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input name="email" type="email" maxlength="254" placeholder="maya@example.org">
+          </label>
+          <label class="field">
+            <span>Skills</span>
+            <input name="skills" type="text" maxlength="500" placeholder="Registration, Setup">
+          </label>
+          <label class="field">
+            <span>Weekly availability</span>
+            <input name="availability" type="text" maxlength="1000" placeholder="Sat 08:00-15:00">
+            <small>Use day + time windows, separated by semicolons.</small>
+          </label>
+          <label class="field">
+            <span>Max hours per week</span>
+            <input name="max_hours_per_week" type="number" min="1" max="60" value="12">
+          </label>
+          <button class="button button-primary" type="submit">Add volunteer</button>
+        </form>
+      </details>
+
+      <details class="panel details-panel">
+        <summary>
+          <span><b>Add a shift</b><small>Role, time, and people needed</small></span>
+          <span class="chevron" aria-hidden="true">+</span>
+        </summary>
+        <form id="shiftForm" class="stack-form">
+          <label class="field">
+            <span>Role</span>
+            <input name="role" type="text" maxlength="100" placeholder="Registration" required>
+          </label>
+          <div class="field-row">
+            <label class="field">
+              <span>Starts</span>
+              <input name="start_time" type="time" required>
+            </label>
+            <label class="field">
+              <span>Ends</span>
+              <input name="end_time" type="time" required>
+            </label>
+          </div>
+          <label class="field">
+            <span>People needed</span>
+            <input name="needed" type="number" min="1" max="50" value="1" required>
+          </label>
+          <label class="field">
+            <span>Notes</span>
+            <input name="notes" type="text" maxlength="500" placeholder="What this crew does">
+          </label>
+          <button class="button button-primary" type="submit">Add shift</button>
+        </form>
+      </details>
+    </aside>
+
+    <section class="content" aria-live="polite">
+      <section class="empty-state" id="emptyState">
+        <div class="empty-art" aria-hidden="true">
+          <span class="empty-card card-one"></span>
+          <span class="empty-card card-two"></span>
+          <span class="empty-card card-three"></span>
+        </div>
+        <span class="eyebrow">A calmer way to staff an event</span>
+        <h1>Build a roster that holds up.</h1>
+        <p>Add an event, people, and shifts. ShiftStack will match availability, flag conflicts, and leave the spreadsheet behind.</p>
+        <div class="button-row center-row">
+          <button class="button button-primary" id="emptyDemoButton" type="button">Explore a demo roster</button>
+          <button class="button button-secondary" id="jumpToEventButton" type="button">Create an event</button>
+        </div>
+      </section>
+
+      <div id="dashboard" hidden>
+        <section class="event-hero">
+          <div>
+            <span class="eyebrow" id="eventDateLabel">Event date</span>
+            <h1 id="eventTitle">Untitled event</h1>
+            <p id="eventMeta">No location</p>
+          </div>
+          <div class="hero-actions">
+            <button class="button button-secondary" id="exportCsvButton" type="button">Export CSV</button>
+            <button class="button button-secondary" id="exportIcsButton" type="button">Add to calendar</button>
+            <button class="button button-accent" id="autoAssignButton" type="button">
+              <span aria-hidden="true">✦</span> Auto-fill open slots
+            </button>
+          </div>
+        </section>
+
+        <section class="metric-grid" aria-label="Roster summary">
+          <article class="metric-card metric-coverage">
+            <div class="metric-top"><span>Coverage</span><b id="coverageValue">0%</b></div>
+            <div class="progress-track"><span id="coverageBar"></span></div>
+            <small id="coverageCaption">0 of 0 slots filled</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span>Open slots</span><b id="openSlotsValue">0</b></div>
+            <small id="openSlotsCaption">Everything is covered</small>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span>People assigned</span><b id="assignedValue">0</b></div>
+            <small id="assignedCaption">Across the active event</small>
+          </article>
+          <article class="metric-card metric-risk">
+            <div class="metric-top"><span>Planning risks</span><b id="riskValue">0</b></div>
+            <small id="riskCaption">No conflicts detected</small>
+          </article>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel schedule-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">Run of show</span>
+                <h2>Shift roster</h2>
+              </div>
+              <span class="soft-badge" id="shiftCount">0 shifts</span>
+            </div>
+            <div class="timeline" id="shiftList"></div>
+          </section>
+
+          <aside class="insights-column">
+            <section class="panel issues-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">Before you send it</span>
+                  <h2>Planning check</h2>
+                </div>
+                <span class="count-badge" id="issueCount">0</span>
+              </div>
+              <div id="issueList"></div>
+            </section>
+
+            <section class="panel workload-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">Fairness check</span>
+                  <h2>Volunteer load</h2>
+                </div>
+              </div>
+              <div id="workloadList"></div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="assignDialog" class="modal">
+    <form method="dialog" id="assignForm">
+      <div class="modal-heading">
+        <div>
+          <span class="eyebrow">Manual assignment</span>
+          <h2 id="assignDialogTitle">Assign a volunteer</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+      </div>
+      <p class="modal-copy">Manual assignments are allowed, but ShiftStack will flag availability, skill, overlap, and weekly-limit risks.</p>
+      <label class="field">
+        <span>Volunteer</span>
+        <select name="volunteer_id" id="assignmentVolunteer" required></select>
+      </label>
+      <div class="button-row modal-actions">
+        <button class="button button-quiet" value="cancel" type="submit">Cancel</button>
+        <button class="button button-primary" id="confirmAssignButton" value="default" type="submit">Assign volunteer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

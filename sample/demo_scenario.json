@@ -1,0 +1,23 @@
+{
+  "event": {
+    "name": "Neighborhood Food Drive",
+    "event_date": "next Saturday",
+    "start_time": "08:00",
+    "end_time": "15:00",
+    "location": "Eastside Community Hall"
+  },
+  "volunteers": [
+    {"name": "Maya Chen", "skills": "Registration, Setup", "availability": "Sat 08:00-15:00", "max_hours_per_week": 6},
+    {"name": "Luis Rivera", "skills": "Food service, Logistics", "availability": "Sat 09:00-15:00", "max_hours_per_week": 6},
+    {"name": "Priya Shah", "skills": "Registration", "availability": "Sat 10:00-14:00", "max_hours_per_week": 4},
+    {"name": "Jordan Brooks", "skills": "Setup, Logistics", "availability": "Sat 08:00-12:00", "max_hours_per_week": 4},
+    {"name": "Sam Wilson", "skills": "", "availability": "Sat 08:00-15:00", "max_hours_per_week": 8}
+  ],
+  "shifts": [
+    {"role": "Setup", "start_time": "08:00", "end_time": "09:00", "needed": 2},
+    {"role": "Registration", "start_time": "09:00", "end_time": "12:00", "needed": 2},
+    {"role": "Food service", "start_time": "11:00", "end_time": "14:00", "needed": 2},
+    {"role": "Logistics", "start_time": "13:00", "end_time": "15:00", "needed": 1}
+  ],
+  "expected_learning": "The demo deliberately leaves realistic gaps so the planning check has something useful to show."
+}
